@@ -125,7 +125,7 @@ endif()
 # Install and output names
 # -----------------------------------------------------------------------------
 
-set(mi_install_dir "${CMAKE_INSTALL_PREFIX}/lib/mimalloc-${mi_version}")
+set(mi_install_dir "${CMAKE_INSTALL_PREFIX}")
 if(MI_SECURE MATCHES "ON")
   set(mi_basename "mimalloc-secure")
 else()
@@ -165,6 +165,7 @@ endif()
 
 # static library
 add_library(mimalloc-static STATIC ${mi_sources})
+set_property(TARGET mimalloc-static PROPERTY POSITION_INDEPENDENT_CODE ON)
 target_compile_definitions(mimalloc-static PRIVATE ${mi_defines} MI_STATIC_LIB)
 target_compile_options(mimalloc-static PRIVATE ${mi_cflags})
 target_link_libraries(mimalloc-static PUBLIC ${mi_libraries})
@@ -182,25 +183,26 @@ else()
 endif()
 
 # install static and shared library, and the include files
-install(TARGETS mimalloc EXPORT mimalloc DESTINATION ${mi_install_dir} LIBRARY)
-install(TARGETS mimalloc-static EXPORT mimalloc DESTINATION ${mi_install_dir})
+install(TARGETS mimalloc EXPORT mimalloc DESTINATION ${mi_install_dir}/lib LIBRARY)
+install(TARGETS mimalloc-static EXPORT mimalloc DESTINATION ${mi_install_dir}/lib)
 install(FILES include/mimalloc.h DESTINATION ${mi_install_dir}/include)
 install(FILES include/mimalloc-override.h DESTINATION ${mi_install_dir}/include)
 install(FILES include/mimalloc-new-delete.h DESTINATION ${mi_install_dir}/include)
-install(FILES cmake/mimalloc-config.cmake DESTINATION ${mi_install_dir}/cmake)
-install(FILES cmake/mimalloc-config-version.cmake DESTINATION ${mi_install_dir}/cmake)
-install(EXPORT mimalloc DESTINATION ${mi_install_dir}/cmake)
+#install(FILES cmake/mimalloc-config.cmake DESTINATION ${mi_install_dir}/cmake)
+#install(FILES cmake/mimalloc-config-version.cmake DESTINATION ${mi_install_dir}/cmake)
+#install(EXPORT mimalloc DESTINATION ${mi_install_dir}/cmake)
 
 if(NOT WIN32)
   # install a symlink in the /usr/local/lib to the versioned library
   set(mi_symlink "${CMAKE_SHARED_MODULE_PREFIX}${mi_basename}${CMAKE_SHARED_LIBRARY_SUFFIX}")
-  set(mi_soname "mimalloc-${mi_version}/${mi_symlink}.${mi_version}")
-  install(CODE "execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink ${mi_soname} ${mi_symlink} WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX}/${mi_install_dir}/..)")
+  set(mi_soname "${mi_symlink}.${mi_version}")
+  install(CODE "execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink ${mi_soname} ${mi_symlink} WORKING_DIRECTORY ${mi_install_dir}/lib)")
   install(CODE "MESSAGE(\"-- Symbolic link: ${CMAKE_INSTALL_PREFIX}/lib/${mi_symlink} -> ${mi_soname}\")")
 endif()
 
 # single object file for more predictable static overriding
 add_library(mimalloc-obj OBJECT src/static.c)
+set_property(TARGET mimalloc-obj PROPERTY POSITION_INDEPENDENT_CODE ON)
 target_compile_definitions(mimalloc-obj PRIVATE ${mi_defines})
 target_compile_options(mimalloc-obj PRIVATE ${mi_cflags})
 target_include_directories(mimalloc-obj PUBLIC
@@ -214,7 +216,7 @@ target_include_directories(mimalloc-obj PUBLIC
 # the FILES expression can also be: $<TARGET_OBJECTS:mimalloc-obj>
 # but that fails cmake versions less than 3.10 so we leave it as is for now
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/mimalloc-obj.dir/src/static.c${CMAKE_C_OUTPUT_EXTENSION}
-        DESTINATION ${mi_install_dir}
+        DESTINATION ${mi_install_dir}/lib
         RENAME ${mi_basename}${CMAKE_C_OUTPUT_EXTENSION} )
 
 # -----------------------------------------------------------------------------
