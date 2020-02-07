@@ -773,7 +773,7 @@ static  bool mi_os_protectx(void* addr, size_t size, bool protect) {
   if (err != 0) { err = errno; }
 #endif
   if (err != 0) {
-    _mi_warning_message("mprotect error: start: 0x%p, csize: 0x%x, err: %i\n", start, csize, err);
+    _mi_warning_message("mprotect error: start: 0x%p, csize: 0x%x, protect: %d, err: %i\n", start, csize, (bool)protect, err);
   }
   return (err == 0);
 }

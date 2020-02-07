@@ -315,7 +315,7 @@ void mi_free(void* p) mi_attr_noexcept
     _mi_warning_message("possibly trying to free a pointer that does not point to a valid heap region: 0x%p\n"
       "(this may still be a valid very large allocation (over 64MiB))\n", p);
     if (mi_likely(_mi_ptr_cookie(segment) == segment->cookie)) {
-      _mi_warning_message("(yes, the previous pointer 0x%p was valid after all)\n", p);
+      _mi_warning_message("(yes, the previous pointer %p was valid after all)\n", p);
     }
   }
 #endif
